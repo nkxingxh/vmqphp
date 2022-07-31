@@ -230,8 +230,20 @@ class Index
             $payUrl = $payUrl['vvalue'];
 
         } else if ($type == 2) {
-            $payUrl = Db::name("setting")->where("vkey", "zfbpay")->find();
-            $payUrl = $payUrl['vvalue'];
+            $zfbbid = Db::name("setting")->where("vkey", "zfbbid")->find();
+            $zfbbid = $zfbbid['vvalue'];
+            if(empty($zfbbid)) {
+                $payUrl = Db::name("setting")->where("vkey", "zfbpay")->find();
+                $payUrl = $payUrl['vvalue'];
+            } else {
+                $payUrl = "alipays://platformapi/startapp?appId=20000123&actionType=scan&biz_data=" . json_encode(array(
+                    's' => 'money',
+                    'u' => $zfbbid,
+                    'a' => strval($reallyPrice),
+                    'm' => $orderId
+                ));
+            }
+            
         }
 
         if ($payUrl == "") {
@@ -319,7 +331,7 @@ class Index
                 "payType" => $res['type'],
                 "price" => $res['price'],
                 "reallyPrice" => $res['really_price'],
-                "payUrl" => $res['pay_url'],
+                "payUrl" => urlencode($res['pay_url']),
                 "isAuto" => $res['is_auto'],
                 "state" => $res['state'],
                 "timeOut" => $time['vvalue'],

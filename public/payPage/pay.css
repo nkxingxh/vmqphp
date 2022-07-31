@@ -125,22 +125,25 @@ body, .body {
 
 .ico_log {
     display: inline-block;
-    width: 130px;
-    height: 38px;
+    width: 170px;
+    height: 39px;
     vertical-align: middle;
     margin-right: 7px
 }
 
 .ico-1 {
-    background: url("weixin.jpg") no-repeat;
+    background: url("wx.png") no-repeat;
+    /*background-size: cover !important;*/
 }
 
 .ico-2 {
-    background: url("alipay.jpg") no-repeat;
+    background: url("zfb.png") no-repeat;
+    /*background-size: cover !important;*/
 }
 
 .ico-3 {
-    background: url("weixin.jpg") no-repeat;
+    background: url("wx.png") no-repeat;
+    /*background-size: cover !important;*/
 }
 
 .mod-title .text {

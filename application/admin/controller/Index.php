@@ -133,6 +133,7 @@ class Index
         $payQf = Db::name("setting")->where("vkey","payQf")->find();
         $wxpay = Db::name("setting")->where("vkey","wxpay")->find();
         $zfbpay = Db::name("setting")->where("vkey","zfbpay")->find();
+        $zfbbid = Db::name("setting")->where("vkey","zfbbid")->find();
         if ($key['vvalue']==""){
             $key['vvalue'] = md5(time());
             Db::name("setting")->where("vkey","key")->update(array(
@@ -153,7 +154,7 @@ class Index
             "payQf"=>$payQf['vvalue'],
             "wxpay"=>$wxpay['vvalue'],
             "zfbpay"=>$zfbpay['vvalue'],
-
+            "zfbbid"=>$zfbbid['vvalue'],
         )));
 
 
@@ -171,6 +172,7 @@ class Index
         Db::name("setting")->where("vkey","payQf")->update(array("vvalue"=>input("payQf")));
         Db::name("setting")->where("vkey","wxpay")->update(array("vvalue"=>input("wxpay")));
         Db::name("setting")->where("vkey","zfbpay")->update(array("vvalue"=>input("zfbpay")));
+        Db::name("setting")->where("vkey","zfbbid")->update(array("vvalue"=>input("zfbbid", '')));
 
 
         return json($this->getReturn());

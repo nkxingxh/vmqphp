@@ -77,7 +77,12 @@
             </div>
         </div>
     </div>
-
+    <div class="layui-form-item">
+        <label class="layui-form-label">支付宝BID</label>
+        <div class="layui-input-block">
+            <input type="text" id="zfbbid" placeholder="支付宝商家 ID (可选，输入此项后可实现支付宝免输入金额付款)" autocomplete="off" class="layui-input">
+        </div>
+    </div>
 
 
     <div class="layui-form-item" style="text-align: right;">
@@ -259,6 +264,7 @@
         var key = $("#key").val();
         var close = $("#close").val();
         var payQf = $("#payQf").val();
+        var zfbbid = $("#zfbbid").val();    //支付宝商家ID
         if (user == ""){
             layer.msg("请输入管理员账号");
             return;
@@ -296,7 +302,7 @@
         }
         wximg = wximg.replace(/enQrcode\?url=/g,"");
         zfbimg = zfbimg.replace(/enQrcode\?url=/g,"");
-        $.post("admin/index/saveSetting","user="+user+"&pass="+pass+"&notifyUrl="+notifyUrl+"&returnUrl="+returnUrl+"&key="+key+"&wxpay="+wximg+"&zfbpay="+zfbimg+"&close="+close+"&payQf="+payQf,function (data) {
+        $.post("admin/index/saveSetting","user="+user+"&pass="+pass+"&notifyUrl="+notifyUrl+"&returnUrl="+returnUrl+"&key="+key+"&wxpay="+wximg+"&zfbpay="+zfbimg+"&close="+close+"&payQf="+payQf+"&zfbbid="+zfbbid,function (data) {
             if (data.code==1){
                 $.post("admin/index/getSettings",function (data) {
                     console.log(data);
@@ -307,6 +313,7 @@
                         $("#returnUrl").val(data.data.returnUrl);
                         $("#key").val(data.data.key);
                         $("#close").val(data.data.close);
+                        $("#zfbbid").val(data.data.zfbbid);
 
                         if (data.data.wxpay!=""){
                             $('#wximg').attr('src', "enQrcode?url="+data.data.wxpay);
@@ -333,6 +340,7 @@
                 $("#key").val(data.data.key);
                 $("#close").val(data.data.close);
                 $("#payQf").val(data.data.payQf);
+                $("#zfbbid").val(data.data.zfbbid);
 
 
                 if (data.data.wxpay!=""){
