@@ -18,7 +18,7 @@
     <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <title>扫码支付</title>
-    <link href="pay.css" rel="stylesheet" media="screen">
+    <link href="pay-v1.1.css" rel="stylesheet" media="screen">
     <script src="https://lf6-cdn-tos.bytecdntp.com/cdn/expire-1-M/jquery/3.3.1/jquery.min.js"></script>
 </head>
 
@@ -237,6 +237,7 @@
         function qrcode_timeout() {
             document.getElementById("orderbody").style.display = "none";
             document.getElementById("timeOut").style.display = "";
+            $("div.foot div.inner p").hide();
         }
 
 
@@ -275,7 +276,6 @@
             } else {
                 $(".error-info-orderId").hide();
                 $(".error-info-payId").hide();
-                $("div.foot div.inner p").hide();
                 timer(0);
             }
         });
