@@ -1,4 +1,5 @@
 <?php
+
 namespace app\index\controller;
 
 use think\Db;
@@ -120,7 +121,6 @@ class Index
         );
 
         return json($menu);
-
     }
 
     //创建订单
@@ -187,14 +187,13 @@ class Index
 
         $jkstate = Db::name("setting")->where("vkey", "jkstate")->find();
         $jkstate = $jkstate['vvalue'];
-        if ($jkstate!="1"){
+        if ($jkstate != "1") {
             return json($this->getReturn(-1, "监控端状态异常，请检查"));
-
         }
 
 
 
-        $reallyPrice = bcmul($price ,100);
+        $reallyPrice = bcmul($price, 100);
 
         $payQf = Db::name("setting")->where("vkey", "payQf")->find();
         $payQf = $payQf['vvalue'];
@@ -206,7 +205,7 @@ class Index
         for ($i = 0; $i < 10; $i++) {
             $tmpPrice = $reallyPrice . "-" . $type;
 
-            $row = Db::execute("INSERT IGNORE INTO tmp_price (price,oid) VALUES ('" . $tmpPrice . "','".$orderId."')");
+            $row = Db::execute("INSERT IGNORE INTO tmp_price (price,oid) VALUES ('" . $tmpPrice . "','" . $orderId . "')");
             if ($row) {
                 $ok = true;
                 break;
@@ -223,41 +222,46 @@ class Index
         }
         //echo $reallyPrice;
 
-        $reallyPrice = bcdiv($reallyPrice, 100,2);
+        $reallyPrice = bcdiv($reallyPrice, 100, 2);
 
+        $isAuto = 1;
         if ($type == 1) {
             $payUrl = Db::name("setting")->where("vkey", "wxpay")->find();
             $payUrl = $payUrl['vvalue'];
-
         } else if ($type == 2) {
             $zfbbid = Db::name("setting")->where("vkey", "zfbbid")->find();
             $zfbbid = $zfbbid['vvalue'];
-            if(empty($zfbbid)) {
+            if (empty($zfbbid)) {
                 $payUrl = Db::name("setting")->where("vkey", "zfbpay")->find();
                 $payUrl = $payUrl['vvalue'];
             } else {
+                //免输入金额 配置
                 $payUrl = "alipays://platformapi/startapp?appId=20000123&actionType=scan&biz_data=" . json_encode(array(
                     's' => 'money',
                     'u' => $zfbbid,
                     'a' => strval($reallyPrice),
                     'm' => $orderId
                 ));
+                $isAuto = 0;
             }
-            
         }
 
         if ($payUrl == "") {
             return json($this->getReturn(-1, "请您先进入后台配置程序"));
         }
-        $isAuto = 1;
-        $_payUrl = Db::name("pay_qrcode")
-            ->where("price", $reallyPrice)
-            ->where("type", $type)
-            ->find();
-        if ($_payUrl) {
-            $payUrl = $_payUrl['pay_url'];
-            $isAuto = 0;
+
+        //未获取到自动付款 二维码
+        if ($isAuto) {
+            $_payUrl = Db::name("pay_qrcode")
+                ->where("price", $reallyPrice)
+                ->where("type", $type)
+                ->find();
+            if ($_payUrl) {
+                $payUrl = $_payUrl['pay_url'];
+                $isAuto = 0;
+            }
         }
+
 
 
         $res = Db::name("pay_order")->where("pay_id", $payId)->find();
@@ -296,7 +300,6 @@ class Index
         if ($isHtml == 1) {
 
             echo "<script>window.location.href = 'payPage/pay.html?orderId=" . $orderId . "'</script>";
-
         } else {
             $time = Db::name("setting")->where("vkey", "close")->find();
             $data = array(
@@ -312,17 +315,14 @@ class Index
                 "date" => $createDate
             );
             return json($this->getReturn(1, "成功", $data));
-
         }
-
-
     }
     //获取订单信息
     public function getOrder()
     {
 
         $res = Db::name("pay_order")->where("order_id", input("orderId"))->find();
-        if ($res){
+        if ($res) {
             $time = Db::name("setting")->where("vkey", "close")->find();
 
             $data = array(
@@ -338,7 +338,7 @@ class Index
                 "date" => $res['create_date']
             );
             return json($this->getReturn(1, "成功", $data));
-        }else{
+        } else {
             return json($this->getReturn(-1, "云端订单编号不存在"));
         }
     }
@@ -346,190 +346,188 @@ class Index
     public function checkOrder()
     {
         $res = Db::name("pay_order")->where("order_id", input("orderId"))->find();
-        if ($res){
-            if ($res['state']==0){
+        if ($res) {
+            if ($res['state'] == 0) {
                 return json($this->getReturn(-1, "订单未支付"));
             }
-            if ($res['state']==-1){
+            if ($res['state'] == -1) {
                 return json($this->getReturn(-1, "订单已过期"));
             }
 
-            $res2 = Db::name("setting")->where("vkey","key")->find();
+            $res2 = Db::name("setting")->where("vkey", "key")->find();
             $key = $res2['vvalue'];
 
-            $res['price'] = number_format($res['price'],2,".","");
-            $res['really_price'] = number_format($res['really_price'],2,".","");
+            $res['price'] = number_format($res['price'], 2, ".", "");
+            $res['really_price'] = number_format($res['really_price'], 2, ".", "");
 
 
-            $p = "payId=".$res['pay_id']."&param=".$res['param']."&type=".$res['type']."&price=".$res['price']."&reallyPrice=".$res['really_price'];
+            $p = "payId=" . $res['pay_id'] . "&param=" . $res['param'] . "&type=" . $res['type'] . "&price=" . $res['price'] . "&reallyPrice=" . $res['really_price'];
 
-            $sign = $res['pay_id'].$res['param'].$res['type'].$res['price'].$res['really_price'].$key;
-            $p = $p . "&sign=".md5($sign);
+            $sign = $res['pay_id'] . $res['param'] . $res['type'] . $res['price'] . $res['really_price'] . $key;
+            $p = $p . "&sign=" . md5($sign);
 
             $url = $res['return_url'];
 
 
 
-            if (strpos($url,"?")===false){
-                $url = $url."?".$p;
-            }else{
-                $url = $url."&".$p;
+            if (strpos($url, "?") === false) {
+                $url = $url . "?" . $p;
+            } else {
+                $url = $url . "&" . $p;
             }
 
             return json($this->getReturn(1, "成功", $url));
-        }else{
+        } else {
             return json($this->getReturn(-1, "云端订单编号不存在"));
         }
-
     }
     //关闭订单
-    public function closeOrder(){
-        $res2 = Db::name("setting")->where("vkey","key")->find();
+    public function closeOrder()
+    {
+        $res2 = Db::name("setting")->where("vkey", "key")->find();
         $key = $res2['vvalue'];
         $orderId = input("orderId");
 
-        $_sign = $orderId.$key;
+        $_sign = $orderId . $key;
 
-        if (md5($_sign)!=input("sign")){
+        if (md5($_sign) != input("sign")) {
             return json($this->getReturn(-1, "签名校验不通过"));
         }
 
-        $res = Db::name("pay_order")->where("order_id",$orderId)->find();
+        $res = Db::name("pay_order")->where("order_id", $orderId)->find();
 
-        if ($res){
-            if ($res['state']!=0){
+        if ($res) {
+            if ($res['state'] != 0) {
                 return json($this->getReturn(-1, "订单状态不允许关闭"));
             }
-            Db::name("pay_order")->where("order_id",$orderId)->update(array("state"=>-1,"close_date"=>time()));
+            Db::name("pay_order")->where("order_id", $orderId)->update(array("state" => -1, "close_date" => time()));
             Db::name("tmp_price")
-                ->where("oid",$res['order_id'])
+                ->where("oid", $res['order_id'])
                 ->delete();
             return json($this->getReturn(1, "成功"));
-        }else{
+        } else {
             return json($this->getReturn(-1, "云端订单编号不存在"));
-
         }
-
     }
     //获取监控端状态
-    public function getState(){
-        $res2 = Db::name("setting")->where("vkey","key")->find();
+    public function getState()
+    {
+        $res2 = Db::name("setting")->where("vkey", "key")->find();
         $key = $res2['vvalue'];
         $t = input("t");
 
-        $_sign = $t.$key;
+        $_sign = $t . $key;
 
-        if (md5($_sign)!=input("sign")){
+        if (md5($_sign) != input("sign")) {
             return json($this->getReturn(-1, "签名校验不通过"));
         }
 
-        $res = Db::name("setting")->where("vkey","lastheart")->find();
+        $res = Db::name("setting")->where("vkey", "lastheart")->find();
         $lastheart = $res['vvalue'];
-        $res = Db::name("setting")->where("vkey","lastpay")->find();
+        $res = Db::name("setting")->where("vkey", "lastpay")->find();
         $lastpay = $res['vvalue'];
-        $res = Db::name("setting")->where("vkey","jkstate")->find();
+        $res = Db::name("setting")->where("vkey", "jkstate")->find();
         $jkstate = $res['vvalue'];
 
-        return json($this->getReturn(1, "成功",array("lastheart"=>$lastheart,"lastpay"=>$lastpay,"jkstate"=>$jkstate)));
-
+        return json($this->getReturn(1, "成功", array("lastheart" => $lastheart, "lastpay" => $lastpay, "jkstate" => $jkstate)));
     }
 
     //App心跳接口
-    public function appHeart(){
+    public function appHeart()
+    {
         $this->closeEndOrder();
 
-        $res2 = Db::name("setting")->where("vkey","key")->find();
+        $res2 = Db::name("setting")->where("vkey", "key")->find();
         $key = $res2['vvalue'];
         $t = input("t");
 
-        $_sign = $t.$key;
+        $_sign = $t . $key;
 
-        if (md5($_sign)!=input("sign")){
+        if (md5($_sign) != input("sign")) {
             return json($this->getReturn(-1, "签名校验不通过"));
         }
 
-//        $jg = time()*1000 - $t;
-//        if ($jg>50000 || $jg<-50000){
-//            return json($this->getReturn(-1, "客户端时间错误"));
-//        }
+        //        $jg = time()*1000 - $t;
+        //        if ($jg>50000 || $jg<-50000){
+        //            return json($this->getReturn(-1, "客户端时间错误"));
+        //        }
 
-        Db::name("setting")->where("vkey","lastheart")->update(array("vvalue"=>time()));
-        Db::name("setting")->where("vkey","jkstate")->update(array("vvalue"=>1));
+        Db::name("setting")->where("vkey", "lastheart")->update(array("vvalue" => time()));
+        Db::name("setting")->where("vkey", "jkstate")->update(array("vvalue" => 1));
         return json($this->getReturn());
     }
     //App推送付款数据接口
-    public function appPush(){
+    public function appPush()
+    {
         $this->closeEndOrder();
 
-        $res2 = Db::name("setting")->where("vkey","key")->find();
+        $res2 = Db::name("setting")->where("vkey", "key")->find();
         $key = $res2['vvalue'];
         $t = input("t");
         $type = input("type");
         $price = input("price");
 
-        $_sign = $type.$price.$t.$key;
+        $_sign = $type . $price . $t . $key;
 
-        if (md5($_sign)!=input("sign")){
+        if (md5($_sign) != input("sign")) {
             return json($this->getReturn(-1, "签名校验不通过"));
         }
 
-//        $jg = time()*1000 - $t;
-//        if ($jg>50000 || $jg<-50000){
-//            return json($this->getReturn(-1, "客户端时间错误"));
-//        }
+        //        $jg = time()*1000 - $t;
+        //        if ($jg>50000 || $jg<-50000){
+        //            return json($this->getReturn(-1, "客户端时间错误"));
+        //        }
 
         Db::name("setting")
-            ->where("vkey","lastpay")
+            ->where("vkey", "lastpay")
             ->update(
                 array(
-                    "vvalue"=>time()
+                    "vvalue" => time()
                 )
             );
 
         $res = Db::name("pay_order")
-            ->where("really_price",$price)
-            ->where("state",0)
-            ->where("type",$type)
+            ->where("really_price", $price)
+            ->where("state", 0)
+            ->where("type", $type)
             ->find();
 
 
 
-        if ($res){
+        if ($res) {
 
             Db::name("tmp_price")
-                ->where("oid",$res['order_id'])
+                ->where("oid", $res['order_id'])
                 ->delete();
 
-            Db::name("pay_order")->where("id",$res['id'])->update(array("state"=>1,"pay_date"=>time(),"close_date"=>time()));
+            Db::name("pay_order")->where("id", $res['id'])->update(array("state" => 1, "pay_date" => time(), "close_date" => time()));
 
             $url = $res['notify_url'];
 
-            $res2 = Db::name("setting")->where("vkey","key")->find();
+            $res2 = Db::name("setting")->where("vkey", "key")->find();
             $key = $res2['vvalue'];
 
-            $p = "payId=".$res['pay_id']."&param=".$res['param']."&type=".$res['type']."&price=".$res['price']."&reallyPrice=".$res['really_price'];
+            $p = "payId=" . $res['pay_id'] . "&param=" . $res['param'] . "&type=" . $res['type'] . "&price=" . $res['price'] . "&reallyPrice=" . $res['really_price'];
 
-            $sign = $res['pay_id'].$res['param'].$res['type'].$res['price'].$res['really_price'].$key;
-            $p = $p . "&sign=".md5($sign);
+            $sign = $res['pay_id'] . $res['param'] . $res['type'] . $res['price'] . $res['really_price'] . $key;
+            $p = $p . "&sign=" . md5($sign);
 
-            if (strpos($url,"?")===false){
-                $url = $url."?".$p;
-            }else{
-                $url = $url."&".$p;
+            if (strpos($url, "?") === false) {
+                $url = $url . "?" . $p;
+            } else {
+                $url = $url . "&" . $p;
             }
 
 
             $re = $this->getCurl($url);
-            if ($re=="success"){
+            if ($re == "success") {
                 return json($this->getReturn());
-            }else{
-                Db::name("pay_order")->where("id",$res['id'])->update(array("state"=>2));
+            } else {
+                Db::name("pay_order")->where("id", $res['id'])->update(array("state" => 2));
 
-                return json($this->getReturn(-1,"异步通知失败"));
+                return json($this->getReturn(-1, "异步通知失败"));
             }
-
-
-        }else{
+        } else {
             $data = array(
                 "close_date" => 0,
                 "create_date" => time(),
@@ -550,61 +548,55 @@ class Index
 
             Db::name("pay_order")->insert($data);
             return json($this->getReturn());
-
         }
-
-
     }
 
 
     //关闭过期订单接口(请用定时器至少1分钟调用一次)
-    public function closeEndOrder(){
-        $res = Db::name("setting")->where("vkey","lastheart")->find();
+    public function closeEndOrder()
+    {
+        $res = Db::name("setting")->where("vkey", "lastheart")->find();
         $lastheart = $res['vvalue'];
-        if ((time()-$lastheart)>60){
-            Db::name("setting")->where("vkey","jkstate")->update(array("vvalue"=>0));
+        if ((time() - $lastheart) > 60) {
+            Db::name("setting")->where("vkey", "jkstate")->update(array("vvalue" => 0));
         }
 
 
 
         $time = Db::name("setting")->where("vkey", "close")->find();
 
-        $closeTime = time()-60*$time['vvalue'];
+        $closeTime = time() - 60 * $time['vvalue'];
         $close_date = time();
 
         $res = Db::name("pay_order")
-            ->where("create_date <=".$closeTime)
-            ->where("state",0)
-            ->update(array("state"=>-1,"close_date"=>$close_date));
+            ->where("create_date <=" . $closeTime)
+            ->where("state", 0)
+            ->update(array("state" => -1, "close_date" => $close_date));
 
-        if ($res){
-            $rows = Db::name("pay_order")->where("close_date",$close_date)->select();
-            foreach ($rows as $row){
+        if ($res) {
+            $rows = Db::name("pay_order")->where("close_date", $close_date)->select();
+            foreach ($rows as $row) {
                 Db::name("tmp_price")
-                    ->where("oid",$row['order_id'])
+                    ->where("oid", $row['order_id'])
                     ->delete();
             }
 
             $rows = Db::name("tmp_price")->select();
-            foreach ($rows as $row){
-                $re = Db::name("pay_order")->where("order_id",$row['oid'])->find();
-                if ($re){
-
-                }else{
+            foreach ($rows as $row) {
+                $re = Db::name("pay_order")->where("order_id", $row['oid'])->find();
+                if ($re) {
+                } else {
                     Db::name("tmp_price")
-                        ->where("oid",$row['oid'])
+                        ->where("oid", $row['oid'])
                         ->delete();
                 }
             }
 
 
-            return json($this->getReturn(1,"成功清理".$res."条订单"));
-        }else{
-            return json($this->getReturn(1,"没有等待清理的订单"));
+            return json($this->getReturn(1, "成功清理" . $res . "条订单"));
+        } else {
+            return json($this->getReturn(1, "没有等待清理的订单"));
         }
-
-
-
     }
 
 
@@ -619,7 +611,7 @@ class Index
         $klsf[] = 'Accept-Language:zh-cn';
         //$klsf[] = 'Content-Type:application/json';
         $klsf[] = 'User-Agent:Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_1 like Mac OS X) AppleWebKit/604.4.7 (KHTML, like Gecko) Mobile/15C153 MicroMessenger/6.6.1 NetType/WIFI Language/zh_CN';
-        $klsf[] = 'Referer:'.$url;
+        $klsf[] = 'Referer:' . $url;
         curl_setopt($ch, CURLOPT_HTTPHEADER, $klsf);
         if ($post) {
             curl_setopt($ch, CURLOPT_POST, 1);
@@ -634,12 +626,11 @@ class Index
         if ($nobaody) {
             curl_setopt($ch, CURLOPT_NOBODY, 1);
         }
-        curl_setopt($ch, CURLOPT_TIMEOUT,60);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60);
         curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $ret = curl_exec($ch);
         curl_close($ch);
         return $ret;
     }
-
 }
