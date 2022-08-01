@@ -224,7 +224,7 @@ class Index
 
         $reallyPrice = bcdiv($reallyPrice, 100, 2);
 
-        $isAuto = 1;
+        $isAuto = 1;    //默认为手动模式，即值为 1; 值为 0 时，为自动模式 (无需手动输入金额)
         if ($type == 1) {
             $payUrl = Db::name("setting")->where("vkey", "wxpay")->find();
             $payUrl = $payUrl['vvalue'];
