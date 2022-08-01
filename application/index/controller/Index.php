@@ -250,7 +250,7 @@ class Index
             return json($this->getReturn(-1, "请您先进入后台配置程序"));
         }
 
-        //未获取到自动付款 二维码
+        //还没有获取到自动付款 二维码
         if ($isAuto) {
             $_payUrl = Db::name("pay_qrcode")
                 ->where("price", $reallyPrice)
