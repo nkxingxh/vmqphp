@@ -478,6 +478,9 @@ class Index
         //            return json($this->getReturn(-1, "客户端时间错误"));
         //        }
 
+        Db::name("push_log")
+            ->insert(array("payload" => json_encode($_REQUEST, JSON_UNESCAPED_UNICODE)));
+
         Db::name("setting")
             ->where("vkey", "lastpay")
             ->update(
