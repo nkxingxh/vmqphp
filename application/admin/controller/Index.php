@@ -152,8 +152,8 @@ class Index
             "jkstate"=>$jkstate['vvalue'],
             "close"=>$close['vvalue'],
             "payQf"=>$payQf['vvalue'],
-            "wxpay"=>$wxpay['vvalue'],
-            "zfbpay"=>$zfbpay['vvalue'],
+            "wxpay"=>urlencode($wxpay['vvalue']),
+            "zfbpay"=>urlencode($zfbpay['vvalue']),
             "zfbbid"=>$zfbbid['vvalue'],
         )));
 
